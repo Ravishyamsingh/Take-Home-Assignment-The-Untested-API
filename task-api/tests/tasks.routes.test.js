@@ -202,6 +202,57 @@ describe('tasks routes integration tests', () => {
     });
   });
 
+  describe('PATCH /tasks/:id/assign', () => {
+    test('assigns an assignee to an existing task', async () => {
+      const existing = taskService.create({ title: 'Assign me' });
+
+      const res = await request(app)
+        .patch(`/tasks/${existing.id}/assign`)
+        .send({ assignee: 'Ravi Shyam' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(existing.id);
+      expect(res.body.assignee).toBe('Ravi Shyam');
+    });
+
+    test('returns 404 when task does not exist', async () => {
+      const res = await request(app)
+        .patch('/tasks/missing-id/assign')
+        .send({ assignee: 'Ravi Shyam' });
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toBe('Task not found');
+    });
+
+    test('returns 400 when assignee is missing or empty', async () => {
+      const existing = taskService.create({ title: 'Needs assignee' });
+
+      const missing = await request(app)
+        .patch(`/tasks/${existing.id}/assign`)
+        .send({});
+      const empty = await request(app)
+        .patch(`/tasks/${existing.id}/assign`)
+        .send({ assignee: '   ' });
+
+      expect(missing.status).toBe(400);
+      expect(missing.body.error).toBe('assignee is required and must be a non-empty string');
+      expect(empty.status).toBe(400);
+      expect(empty.body.error).toBe('assignee is required and must be a non-empty string');
+    });
+
+    test('returns 409 when task is already assigned', async () => {
+      const existing = taskService.create({ title: 'Assigned task', assignee: 'Initial Owner' });
+
+      const res = await request(app)
+        .patch(`/tasks/${existing.id}/assign`)
+        .send({ assignee: 'New Owner' });
+
+      expect(res.status).toBe(409);
+      expect(res.body.error).toBe('Task is already assigned');
+      expect(taskService.findById(existing.id).assignee).toBe('Initial Owner');
+    });
+  });
+
   describe('GET /tasks/stats', () => {
     test('returns counts by status and overdue count', async () => {
       const past = new Date(Date.now() - 86400000).toISOString();
