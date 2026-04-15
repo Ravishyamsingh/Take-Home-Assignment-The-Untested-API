@@ -4,6 +4,12 @@ A 2-day take-home assignment. You'll read unfamiliar code, write tests, track do
 
 Read **[ASSIGNMENT.md](./ASSIGNMENT.md)** for the full brief before you start.
 
+## Quick Review Notes
+
+- Live API base URL: https://take-home-assignment-the-untested-a-nine.vercel.app
+- Start testing directly with: `/tasks`, `/tasks/stats`, `/tasks/:id/complete`, `/tasks/:id/assign`
+- Data is in-memory, so task data can reset on restart/redeploy
+
 ---
 
 ## A note on AI tools
@@ -65,7 +71,7 @@ ASSIGNMENT.md               # Full brief — read this first
 | `DELETE` | `/tasks/:id`              | Delete a task (returns 204)              |
 | `PATCH`  | `/tasks/:id/complete`     | Mark a task as complete                  |
 | `GET`    | `/tasks/stats`            | Counts by status + overdue count         |
-| `PATCH`  | `/tasks/:id/assign`       | **Assign a task to a user** _(to implement)_ |
+| `PATCH`  | `/tasks/:id/assign`       | Assign a task to a user                  |
 
 ### Task shape
 
@@ -74,8 +80,9 @@ ASSIGNMENT.md               # Full brief — read this first
   "id": "uuid",
   "title": "string",
   "description": "string",
-  "status": "pending | in-progress | completed",
+  "status": "todo | in_progress | done",
   "priority": "low | medium | high",
+  "assignee": "string | null",
   "dueDate": "ISO 8601 or null",
   "completedAt": "ISO 8601 or null",
   "createdAt": "ISO 8601"
@@ -93,7 +100,7 @@ curl -X POST http://localhost:3000/tasks \
 
 **List tasks with filter**
 ```bash
-curl "http://localhost:3000/tasks?status=pending&page=1&limit=10"
+curl "http://localhost:3000/tasks?status=todo&page=1&limit=10"
 ```
 
 **Mark complete**
